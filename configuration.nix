@@ -18,7 +18,6 @@
 
   networking.hostName = "xin"; # Define your hostname.
   networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
-  #networking.networkmanager.enable = true;
 
   # Select internationalisation properties.
   i18n = {
@@ -40,8 +39,6 @@
   # Some programs need SUID wrappers, can be configured further or are
   # started in user sessions.
   programs.bash.enableCompletion = true;
-  # programs.mtr.enable = true;
-  # programs.gnupg.agent = { enable = true; enableSSHSupport = true; };
 
   ### services
 
@@ -49,7 +46,7 @@
   # services.openssh.enable = true;
 
   # Open ports in the firewall.
-  networking.firewall.allowedTCPPorts = [ 1448 ];
+  networking.firewall.allowedTCPPorts = [ 22 ];
   # networking.firewall.allowedUDPPorts = [ ... ];
   # Or disable the firewall altogether.
   # networking.firewall.enable = false;
@@ -63,7 +60,6 @@
       ExecStop = "";
     };
     aliases = [ "multi-user.target.wants/macchanger.service" ];
-    #enable = true;
   };
 
   # set number of cores to build with
@@ -82,9 +78,6 @@
     windowManager.i3.enable = true;
     windowManager.default = "i3";
   };
-
-  # Enable CUPS to print documents.
-  # services.printing.enable = true;
 
   # Define a user account. Don't forget to set a password with ‘passwd’.
   users.extraUsers.saagar = {
