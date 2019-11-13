@@ -11,12 +11,20 @@
       ./aliases.nix
     ];
 
-  # Use the systemd-boot EFI boot loader.
+  # Use the systemd boot loader
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
-  boot.kernelPatches = [ { name = "patch_realtek"; patch = /etc/nixos/patch_realtek.patch; } ];
 
-  networking.hostName = "xin"; # Define your hostname.
+  # set luks devices
+  boot.initrd.luks.devices = [
+    {
+      name = "root";
+      device = "/dev/sda2";
+      preLVM = true;  
+    }
+  ];
+
+  networking.hostName = ""; # Define your hostname.
   networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
 
   # Select internationalisation properties.
@@ -29,18 +37,29 @@
   # Set your time zone.
   time.timeZone = "America/Los_Angeles";
 
-  # List packages installed in system profile. To search by name, run:
-  # $ nix-env -qaP | grep wget
+  # List packages installed in system profile. To search, run:
+  #$ nix search wget
   environment.systemPackages = with pkgs; [
     wget vim
     macchanger
+    glibcLocales
   ];
 
   # Some programs need SUID wrappers, can be configured further or are
   # started in user sessions.
   programs.bash.enableCompletion = true;
+  # programs.mtr.enable = true;
+  # programs.gnupg.agent = { enable = true; enableSSHSupport = true; };
+  # disable the **damn annoying** ssh askpass -- makes git friendly
+  programs.ssh.askPassword = "";
 
-  ### services
+  # List services that you want to enable:
+  
+  # monitor scaling
+  # yubikey
+ # services.udev.packages = [ pkgs.yubikey-personalization ];
+  services.udev.packages = [ pkgs.libu2f-host ];
+  services.pcscd.enable = true;
 
   # Enable the OpenSSH daemon.
   # services.openssh.enable = true;
@@ -50,48 +69,58 @@
   # networking.firewall.allowedUDPPorts = [ ... ];
   # Or disable the firewall altogether.
   # networking.firewall.enable = false;
-
-  systemd.services.macchanger = {
-    description = "Randomize MAC address at boot time with macchanger";
-    before = [ "wpa_supplicant.service" ];
-    serviceConfig = {
-      Type = "oneshot";
-      ExecStart = "/run/current-system/sw/bin/macchanger -rb wlp1s0";
-      ExecStop = "";
-    };
-    aliases = [ "multi-user.target.wants/macchanger.service" ];
+  
+  # openvpn configurations
+  services.openvpn.servers = {
   };
 
-  # set number of cores to build with
-  nix.buildCores = 4;
+  # Enable CUPS to print documents.
+  # services.printing.enable = true;
 
-  # xserver options
+  # sound.enable = true;
+  # hardware.pulseaudio.enable = true;
+
+  # Enable the X11 windowing system.
+  environment.pathsToLink = [ "/libexec" ];
   services.xserver = {
-    # Enable the X11 windowing system.
     enable = true;
     layout = "us";
     
+    monitorSection = ''
+      DisplaySize 406 228
+    '';
+
     # enable touchpad support
     libinput.enable = true;
     
-    # enable i3 window manager
+    # desktopManager
+    desktopManager = {
+      default = "none";
+      xterm.enable = false;
+    };
+    
+    # enable i3
     windowManager.i3.enable = true;
     windowManager.default = "i3";
   };
 
+  # enable brightness modification
+  hardware.brightnessctl.enable = true;
+  
   # Define a user account. Don't forget to set a password with ‘passwd’.
-  users.extraUsers.saagar = {
+  users.extraUsers.nobody = {
     isNormalUser = true;
     uid = 1000;
-    extraGroups = [ "wheel" "audio" "video" "input" "docker" "networkmanager" ];
+    extraGroups = [ "wheel" "audio" "video" "input" "docker" ];
   };
-
-  # use pulseaudio as default audio manager
+  
+  # Enable sound.
+  sound.enable = true;
   hardware.pulseaudio = {
     enable = true;
     package = pkgs.pulseaudioFull;
   };
-
+  
   # set fonts
   fonts = {
     enableFontDir = true;
@@ -107,29 +136,26 @@
       source-code-pro
       source-sans-pro
       source-serif-pro
+      emojione
     ];
   };
 
-  # allow bluetooth
+  # bluetooth
   hardware.bluetooth.enable = true;
   hardware.bluetooth.powerOnBoot = false;
 
-  # attempt to enable u2f
-  hardware.u2f.enable = true;
-
-  # attempt to allow flash on firefox
-  nixpkgs.config.allowUnfree = true;
-  nixpkgs.config.firefox.enableAdobeFlash = true;
-
-  # allow virtualization
+  # virtualization
   virtualisation.libvirtd.enable = true;
+  
+  #nixpkgs.config.allowUnfree = true;
   virtualisation.virtualbox.host.enable = true;
+  users.extraGroups.vboxusers.members = [ "nobody" ];
+  #virtualisation.virtualbox.host.enableExtensionPack = true;
   virtualisation.docker.enable = true;
- 
+
   # This value determines the NixOS release with which your system is to be
   # compatible, in order to avoid breaking some software such as database
   # servers. You should change this only after NixOS release notes say you
   # should.
-  system.stateVersion = "18.03"; # Did you read the comment?
-
+  system.stateVersion = "19.09"; # Did you read the comment?
 }
