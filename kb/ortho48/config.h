@@ -63,7 +63,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #endif
 #define TAPPING_TOGGLE 1
 
-#define DYNAMIC_MACRO_NO_NESTING
+//#define DYNAMIC_MACRO_NO_NESTING
 
 /*
  * Feature disable options
